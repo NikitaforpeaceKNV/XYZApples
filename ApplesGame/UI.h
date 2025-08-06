@@ -5,6 +5,12 @@
 
 namespace ui
 {
+
+	struct Menu {
+		std::vector<sf::Text> items;
+		int selectedItem = 0;
+	};
+
 	struct Leaderboard {
 		sf::Text position_on_leaderboard;
 		sf::Text nickName;
@@ -21,6 +27,7 @@ namespace ui
 		sf::Text gameOverText;
 		sf::Text gameSettings;
 		std::vector<Leaderboard> leaderboard;
+		Menu mainMenu;
 
 
 		void LeaderBoardInit(std::vector<Leaderboard>& leaderboard)

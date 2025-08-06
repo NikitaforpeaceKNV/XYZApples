@@ -18,6 +18,15 @@ namespace init
 	struct GameState
 	{
 
+		enum class State {
+			MainMenu,
+			Gameplay,
+			Settings,
+			GameOver,
+			Leaderboard
+		};
+		State currentState = State::MainMenu;
+
 		BIT_Mask mask;
 
 		entities::player::Player player;
@@ -39,6 +48,12 @@ namespace init
 		sf::SoundBuffer deathSoundBuffer;
 		sf::Sound appleEatSound;
 		sf::Sound deathSound;
+
+		struct Settings {
+			bool endlessApples = false;
+			bool accelerationEnabled = false;
+		} settings;
+
 	};
 
 	void RestartGame(GameState& gameState);
@@ -48,4 +63,5 @@ namespace init
 	void InitSettingsText(GameState& gamestate);
 	void InitHintText(GameState& gamestate);
 	void InitGameoverText(GameState& gamestate);
+	void InitMainMenu(GameState& gamestate);
 }

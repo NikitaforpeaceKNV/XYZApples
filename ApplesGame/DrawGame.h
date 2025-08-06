@@ -11,4 +11,6 @@ namespace draw
 	void DrawUI(init::GameState& gamestate, sf::RenderWindow& window);
 	void DrawGamestartSettings(init::GameState& gamestate, sf::RenderWindow& window);
 	void DrawLeaderboard(init::GameState& gamestate, sf::RenderWindow& window);
+	void DrawMainMenu(const init::GameState& gamestate, sf::RenderWindow& window);
+	void DrawSettings(init::GameState& gamestate, sf::RenderWindow& window);
 }

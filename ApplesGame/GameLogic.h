@@ -14,4 +14,7 @@ namespace logic
 	void GameOver(init::GameState& gamestate);
 	void UpdateUI(init::GameState& gamestate, float timeDelta);
 	void GameSettingSet(init::GameState& gamestate);
+	void HandleMainMenuInput(init::GameState& gamestate, sf::RenderWindow& window);
+	void UpdateMenuColors(init::GameState& gamestate);
+	void HandleSettingsInput(init::GameState& gamestate);
 }

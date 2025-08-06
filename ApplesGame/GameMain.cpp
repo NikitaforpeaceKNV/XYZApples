@@ -23,54 +23,118 @@ void HandleWindowEvents(sf::RenderWindow& window)
 
 int main()
 {
-	// Init random number generator
-	unsigned int seed = (unsigned int)time(nullptr); // Get current time as seed. You can also use any other number to fix randomization
-	srand(seed);
+    // Инициализация генератора случайных чисел
+    unsigned int seed = (unsigned int)time(nullptr);
+    srand(seed);
 
-	// Init window
-	sf::RenderWindow window(sf::VideoMode(settings::SCREEN_WIDTH, settings::SCREEN_HEGHT), "AppleGame");
+    // Создание окна
+    sf::RenderWindow window(
+        sf::VideoMode(settings::SCREEN_WIDTH, settings::SCREEN_HEGHT),
+        "AppleGame",
+        sf::Style::Close
+    );
+    window.setFramerateLimit(60);
 
-	init::GameState gameState;
-	init::InitGame(gameState);
+    // Инициализация состояния игры
+    init::GameState gameState;
+    init::InitGame(gameState);
+    init::InitMainMenu(gameState);  // Инициализация меню
 
-	// Init game clock
-	sf::Clock game_clock;
-	sf::Time lastTime = game_clock.getElapsedTime();
+    // Игровые часы
+    sf::Clock gameClock;
+    sf::Time lastTime = gameClock.getElapsedTime();
 
-	// Game loop
-	while (window.isOpen())
-	{
-		HandleWindowEvents(window);
+    // Главный игровой цикл
+    while (window.isOpen())
+    {
+        // Обработка событий окна
+        sf::Event event;
+        while (window.pollEvent(event))
+        {
+            if (event.type == sf::Event::Closed)
+                window.close();
 
-		if (!window.isOpen())
-		{
-			return 0;
-		}
+            // Обработка ESC для возврата в меню из любых состояний
+            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape)
+            {
+                if (gameState.currentState == init::GameState::State::Gameplay ||
+                    gameState.currentState == init::GameState::State::Leaderboard)
+                {
+                    gameState.currentState = init::GameState::State::MainMenu;
+                }
+            }
+        }
 
-		while (gameState.isGameStart)
-		{
-			draw::DrawGamestartSettings(gameState, window);
-			window.display();
-			logic::GameSettingSet(gameState);
-		}
+        // Расчет времени между кадрами
+        sf::Time currentTime = gameClock.getElapsedTime();
+        float timeDelta = currentTime.asSeconds() - lastTime.asSeconds();
+        lastTime = currentTime;
 
-		logic::HandleInput(gameState);
+        // Очистка экрана
+        window.clear();
 
-		// Calculate time delta
-		sf::Time currentTime = game_clock.getElapsedTime();
-		float timeDelta = currentTime.asSeconds() - lastTime.asSeconds();
-		lastTime = currentTime;
-		logic::UpdateGame(gameState, timeDelta);
+        // Обработка разных состояний игры
+        switch (gameState.currentState)
+        {
+        case init::GameState::State::MainMenu:
+        {
+            // Обработка ввода в меню
+            logic::HandleMainMenuInput(gameState, window);
 
-		// Draw everything here
-		// Clear the window first
-		window.clear();
+            // Отрисовка меню
+            draw::DrawMainMenu(gameState, window);
 
-		draw::DrawGame(gameState, window);
+            // Подсказка управления
+            sf::Text hint;
+            hint.setString("Use UP/DOWN arrows to navigate, ENTER to select");
+            hint.setFont(gameState.font);
+            hint.setCharacterSize(20);
+            hint.setPosition(50.f, settings::SCREEN_HEGHT - 50.f);
+            hint.setFillColor(sf::Color(150, 150, 150));
+            window.draw(hint);
+            break;
+        }
 
-		// End the current frame, display window contents on screen
-		window.display();
-	}
+        case init::GameState::State::Gameplay:
+        {
+            // Обработка игрового ввода
+            logic::HandleInput(gameState);
 
-	return 0;
+            // Обновление игровой логики
+            logic::UpdateGame(gameState, timeDelta);
+
+            // Отрисовка игры
+            draw::DrawGame(gameState, window);
+            break;
+        }
+
+        case init::GameState::State::Settings:
+        {
+            logic::HandleSettingsInput(gameState);
+            draw::DrawSettings(gameState, window);
+            break;
+        }
+
+        case init::GameState::State::Leaderboard:
+        {
+            // Отрисовка таблицы лидеров
+            draw::DrawLeaderboard(gameState, window);
+
+            // Подсказка возврата
+            sf::Text hint;
+            hint.setString("Press ESC to return to menu");
+            hint.setFont(gameState.font);
+            hint.setCharacterSize(20);
+            hint.setPosition(settings::SCREEN_WIDTH / 2.f - 100.f, settings::SCREEN_HEGHT - 50.f);
+            hint.setFillColor(sf::Color::White);
+            window.draw(hint);
+            break;
+        }
+        }
+
+        // Отображение на экране
+        window.display();
+    }
+
+    return 0;
 }

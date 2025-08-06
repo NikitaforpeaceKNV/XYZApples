@@ -117,8 +117,28 @@ void init::InitGame(GameState& gameState)
 	gameState.UI.LeaderBoardInit(gameState.UI.leaderboard);
 
 	RestartGame(gameState);
+
 }
 
+void init::InitMainMenu(GameState& gamestate)
+{
+	gamestate.UI.mainMenu.items.resize(4);
 
+	gamestate.UI.mainMenu.items[0].setString("Start Game");
+	gamestate.UI.mainMenu.items[1].setString("Settings");
+	gamestate.UI.mainMenu.items[2].setString("Leaderboard");
+	gamestate.UI.mainMenu.items[3].setString("Exit");
+
+	for (size_t i = 0; i < gamestate.UI.mainMenu.items.size(); ++i)
+	{
+		gamestate.UI.mainMenu.items[i].setFont(gamestate.font);
+		gamestate.UI.mainMenu.items[i].setCharacterSize(30);
+		gamestate.UI.mainMenu.items[i].setFillColor(i == 0 ? sf::Color::Yellow : sf::Color::White);
+		gamestate.UI.mainMenu.items[i].setPosition(
+			settings::SCREEN_WIDTH / 2.f - 100.f,
+			settings::SCREEN_HEGHT / 2.f + i * 40.f
+		);
+	}
+}
 
 

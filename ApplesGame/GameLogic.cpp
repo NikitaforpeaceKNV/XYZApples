@@ -50,25 +50,25 @@ void logic::UpdateGame(init::GameState& gameState, float timeDelta)
 			// Check collision with apple
 			if (HasPlayerCollisionWithApple(gameState.player, gameState.apples1[i]))
 			{
-				// Move apple to a new random position
 				gameState.appleEatSound.play();
 
-				if(gameState.mask.bit_mask_m & (1<<gameState.mask.endless_apples_or_not))
-				{
-				InitApple(gameState.apples1[i], gameState.appleTexture);
+				
+				if (gameState.settings.endlessApples) {
+					entities::apple::InitApple(gameState.apples1[i], gameState.appleTexture);
 				}
-				else
-				{
-					gameState.apples1.erase(gameState.apples1.begin()+i);
+				else {
+					gameState.apples1.erase(gameState.apples1.begin() + i);
 				}
-				// Increase eaten apples counter
+
 				gameState.numEatenApples++;
-				// Increase player speed
-				if (gameState.mask.bit_mask_m & (1 << gameState.mask.acceleration_status))
-				{
+
+				if (gameState.settings.accelerationEnabled) {
 					gameState.player.basic_speed += settings::ACCELERATION;
 				}
 			}
+
+
+
 		}
 
 		for (int i = 0; i < settings::NUM_ROCKS; ++i)
@@ -113,6 +113,7 @@ void logic::UpdateGame(init::GameState& gameState, float timeDelta)
 	}
 
 	UpdateUI(gameState, timeDelta);
+
 }
 
 bool logic::HasPlayerCollisionWithScreenBorder(const entities::player::Player& player)
@@ -192,4 +193,75 @@ void logic::GameSettingSet(init::GameState& gamestate)
 	}
 
 	gamestate.isGameStart = false;
+}
+
+void logic::HandleMainMenuInput(init::GameState& gamestate, sf::RenderWindow& window)
+{
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
+	{
+		gamestate.UI.mainMenu.selectedItem =
+			(gamestate.UI.mainMenu.selectedItem - 1 + gamestate.UI.mainMenu.items.size()) %
+			gamestate.UI.mainMenu.items.size();
+		UpdateMenuColors(gamestate);
+	}
+	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
+	{
+		gamestate.UI.mainMenu.selectedItem =
+			(gamestate.UI.mainMenu.selectedItem + 1) % gamestate.UI.mainMenu.items.size();
+		UpdateMenuColors(gamestate);
+	}
+	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Enter))
+	{
+		switch (gamestate.UI.mainMenu.selectedItem)
+		{
+		case 0: // Start Game
+			gamestate.currentState = init::GameState::State::Gameplay;
+			break;
+		case 1: // Settings
+			gamestate.currentState = init::GameState::State::Settings;
+			break;
+		case 2: // Leaderboard
+			gamestate.currentState = init::GameState::State::Leaderboard;
+			break;
+		case 3: // Exit
+			window.close();
+			break;
+		}
+	}
+}
+
+void logic::UpdateMenuColors(init::GameState& gamestate)
+{
+	for (size_t i = 0; i < gamestate.UI.mainMenu.items.size(); ++i)
+	{
+		// Выделенный пункт - желтый, остальные - белые
+		gamestate.UI.mainMenu.items[i].setFillColor(
+			i == gamestate.UI.mainMenu.selectedItem ? sf::Color::Yellow : sf::Color::White
+		);
+
+		// Можно добавить дополнительные эффекты для выделенного пункта
+		if (i == gamestate.UI.mainMenu.selectedItem)
+		{
+			gamestate.UI.mainMenu.items[i].setStyle(sf::Text::Bold);
+		}
+		else
+		{
+			gamestate.UI.mainMenu.items[i].setStyle(sf::Text::Regular);
+		}
+	}
+}
+
+void logic::HandleSettingsInput(init::GameState& gamestate)
+{
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num1)) {
+		gamestate.settings.endlessApples = !gamestate.settings.endlessApples;
+		sf::sleep(sf::milliseconds(200)); // Задержка для предотвращения многократного переключения
+	}
+	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num2)) {
+		gamestate.settings.accelerationEnabled = !gamestate.settings.accelerationEnabled;
+		sf::sleep(sf::milliseconds(200));
+	}
+	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Enter)) {
+		gamestate.currentState = init::GameState::State::MainMenu;
+	}
 }
